@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Suspect Recognition App - Priyanka</title>
+  <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --blue: #00b4db;
+      --dark: #141e30;
+      --light: #ffffff;
+      --gradient-admin: linear-gradient(135deg, #141e30, #243b55);
+      --box-glass: rgba(255, 255, 255, 0.15);
+      --blur: blur(14px);
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    body {
+      background: var(--gradient-admin);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .glass-box {
+      background: var(--box-glass);
+      backdrop-filter: var(--blur);
+      border-radius: 20px;
+      padding: 30px 20px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.4);
+      text-align: center;
+      margin: 20px;
+      animation: fadeIn 0.5s ease;
+    }
+    @keyframes fadeIn {
+      from {opacity:0; transform:scale(0.95);}
+      to {opacity:1; transform:scale(1);}
+    }
+    input[type="text"], input[type="password"], input[type="tel"], input[type="number"], input[type="file"] {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.8);
+      color: #333;
+      border: none;
+      outline: none;
+    }
+    button {
+      background: linear-gradient(to right, #00c9ff, #92fe9d);
+      padding: 12px 20px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      width: 100%;
+      transition: 0.3s ease;
+      margin-top: 10px;
+    }
+    button:hover {
+      transform: scale(1.05);
+    }
+    .preview {
+      margin-top: 12px;
+      max-width: 220px;
+      border-radius: 12px;
+      display: none;
+    }
+    .result-box {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 15px;
+      border-radius: 14px;
+      margin-top: 15px;
+      text-align: left;
+    }
+    #error-msg, #error-msg2, #error-msg3 {
+      color: #ff6666;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Step 1: Login -->
+  <div class="glass-box" id="loginBox">
+    <h2>🔐 Priyanka's Login</h2>
+    <input type="text" id="username" placeholder="Enter Username">
+    <input type="password" id="password" placeholder="Enter Password">
+    <button onclick="validateLogin()">Login</button>
+    <p id="error-msg"></p>
+  </div>
+
+  <!-- Step 2: Mobile Number -->
+  <div class="glass-box" id="numberBox" style="display:none;">
+    <h2>📱 Verify Mobile</h2>
+    <input type="tel" id="phone" placeholder="Enter Mobile Number" maxlength="10">
+    <button onclick="sendOTP()">Send OTP</button>
+    <p id="error-msg2"></p>
+  </div>
+
+  <!-- Step 3: OTP Verification -->
+  <div class="glass-box" id="otpBox" style="display:none;">
+    <h2>🔑 Enter OTP</h2>
+    <p id="otpMsg"></p>
+    <input type="number" id="otpInput" placeholder="Enter OTP">
+    <button onclick="verifyOTP()">Verify OTP</button>
+    <p id="error-msg3"></p>
+  </div>
+
+  <!-- Step 4: Welcome Message -->
+  <div class="glass-box" id="welcomeBox" style="display:none;">
+    <h2>🎉 Welcome Priyanka!</h2>
+    <p style="color:lightgreen;">You are authenticated successfully.</p>
+    <p>Redirecting to Suspect Checking Page...</p>
+  </div>
+
+  <!-- Final Admin Panel (Suspect Recognition App) -->
+  <div class="glass-box" id="adminPanel" style="display:none;">
+    <h1>🕵️ Suspect Recognition Panel</h1>
+    <input type="file" id="adminFile" accept="image/*">
+    <img class="preview" id="adminPreview">
+    <div id="adminResult" class="result-box"></div>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+<script>
+  // Sample Suspect Database
+  const db = [
+    { id: 'SUS-1000', name: 'Justin Robert', age: 48, gender: 'Male', crimes: 'Theft', image: 'front/A00147.jpg' },
+    { id: 'SUS-1001', name: 'James Fredrick', age: 45, gender: 'Male', crimes: 'Fraud', image: 'front/A00360.jpg' },
+    { id: 'SUS-1002', name: 'Brain Jason', age: 55, gender: 'Male', crimes: 'Assault', image: 'front/A00367.jpg' },
+    { id: 'SUS-1003', name: 'Devin Sean', age: 60, gender: 'Male', crimes: 'Cybercrime', image: 'front/A01054.jpg' },
+    { id: 'SUS-1004', name: 'Alex Morgan', age: 58, gender: 'Male', crimes: 'Identity Theft', image: 'front/A01072.jpg' }
+  ];
+
+  // Login Step
+  function validateLogin() {
+    const user = document.getElementById("username").value;
+    const pass = document.getElementById("password").value;
+    if(user === "priyanka" && pass === "priyanka123"){
+      document.getElementById("loginBox").style.display = "none";
+      document.getElementById("numberBox").style.display = "block";
+    } else {
+      document.getElementById("error-msg").innerText = "Invalid username or password!";
+    }
+  }
+
+  // Mobile Number Step
+  function sendOTP() {
+    const phone = document.getElementById("phone").value;
+    if(phone.length === 10 && !isNaN(phone)){
+      document.getElementById("numberBox").style.display = "none";
+      document.getElementById("otpBox").style.display = "block";
+      document.getElementById("otpMsg").innerText = `OTP sent to XXXXXX${phone.slice(6)}`;
+    } else {
+      document.getElementById("error-msg2").innerText = "Enter valid 10-digit mobile number!";
+    }
+  }
+
+  // OTP Step
+  function verifyOTP() {
+    const otp = document.getElementById("otpInput").value;
+    if(otp === "1234"){
+      document.getElementById("otpBox").style.display = "none";
+      document.getElementById("welcomeBox").style.display = "block";
+      setTimeout(() => {
+        document.getElementById("welcomeBox").style.display = "none";
+        document.getElementById("adminPanel").style.display = "block";
+      }, 3000); // 3 seconds wait
+    } else {
+      document.getElementById("error-msg3").innerText = "Incorrect OTP!";
+    }
+  }
+
+  // Logout Function
+  function logout() {
+    alert("Logged out successfully!");
+    location.reload();
+  }
+
+  // Suspect Recognition Functionality
+  const fileInput = document.getElementById("adminFile");
+  const preview = document.getElementById("adminPreview");
+  const resultBox = document.getElementById("adminResult");
+
+  fileInput.addEventListener("change", () => {
+    const file = fileInput.files[0];
+    if (file) {
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = "block";
+
+      resultBox.innerHTML = '<p style="color:lightblue;">Scanning...</p>';
+      setTimeout(() => {
+        const fileName = file.name;
+        const suspect = db.find(s => s.image.endsWith(fileName));
+        if (suspect) {
+          resultBox.innerHTML = `
+            <div style="color:lightgreen;">
+              <h3>✅ Suspect Identified</h3>
+              <p><strong>ID:</strong> ${suspect.id}</p>
+              <p><strong>Name:</strong> ${suspect.name}</p>
+              <p><strong>Age:</strong> ${suspect.age}</p>
+              <p><strong>Gender:</strong> ${suspect.gender}</p>
+              <p><strong>Crimes:</strong> ${suspect.crimes}</p>
+              <img src="${suspect.image}" style="width:100px; border-radius:8px;" />
+            </div>`;
+        } else {
+          resultBox.innerHTML = `
+            <div style="color:#ff6666;">
+              <h3>🚫 No Match Found</h3>
+              <p>New suspect ID: <strong>SUS-${Date.now()}</strong></p>
+            </div>`;
+        }
+      }, 2000);
+    }
+  });
+</script>
+
+</body>
+</html>
